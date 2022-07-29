@@ -32,7 +32,7 @@ namespace CustomStyle {
     [HarmonyPatch("Update")]
 	public static class InfinteStyle {
 		public static void Postfix(ref StyleHUD __instance, ref bool ___ascending) {
-			// __instance.currentMeter = __instance.maxMeter;
+			__instance.currentMeter = __instance.maxMeter;
 			__instance.styleRank.enabled = Plugin.showOriginalStyle;
 
 			// -- Ascention / Descention Code --

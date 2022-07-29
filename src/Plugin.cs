@@ -71,6 +71,20 @@ namespace CustomStyle
                 CustomStyle = CustomStyleText.Create(Camera.main.GetComponentInChildren<StyleHUD>().styleRank.transform, Styles[0]);
             });
 
+            Options.CreateOptionsMenu("Custom Styles", (menu) => {
+                var panel = menu.AddOptionsPanel();
+                UI.CreateButton(panel, "epic button 1");
+                UI.CreateButton(panel, "epic button 2");
+                UI.CreateButton(panel, "epic button 3");
+                UI.CreateButton(panel, "epic button 4");
+                UI.CreateButton(panel, "epic button 5");
+                UI.CreateButton(panel, "epic button 6");
+                UI.CreateButton(panel, "epic button 7");
+                UI.CreateButton(panel, "epic button 8");
+                UI.CreateButton(panel, "epic button 9");
+                UI.CreateButton(panel, "wide boi", 580, 30);
+            }, "Styles");
+
             Plugin.Log.LogInfo("Created UI");
 
             Plugin.Log.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");

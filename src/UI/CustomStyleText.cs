@@ -72,7 +72,6 @@ namespace CustomStyle {
 				StyleText.text = $"<color=#{ColorUtility.ToHtmlStringRGB(StyleData.PrefixColor)}><size=150>{StyleData.Prefix}</size></color><color=#{ColorUtility.ToHtmlStringRGB(StyleData.SuffixColor)}><size=98>{StyleData.Suffix}</size></color>";
 			} else {
 				DropShadowText.enabled = true;
-				Plugin.Log.LogInfo("Less go");
 
 				StyleText.transform.localScale = new Vector3(0.9f, 1, 1);
 				DropShadowText.transform.localScale = new Vector3(0.9f, 1, 1);

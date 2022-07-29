@@ -10,8 +10,13 @@ using System.Reflection;
 
 namespace ULTRAINTERFACE {
 	public static class Options {
-		public static CustomScrollView OptionsScroll { get; internal set; }
-		public static RectTransform OptionsMenu { get; internal set; }
+		public static CustomScrollView OptionsScroll { get; private set; }
+		public static RectTransform OptionsMenu { get; internal set; } // It's just easier to have SetupUI grab the menu
+
+		static Transform GameplayOptionsContent;
+
+		static GameObject OptionsPanelPrefab;
+		static GameObject CheckboxOptionsPrefab;
 
 		public static void CreateOptionsMenu(string title, Action<OptionsMenu> createAction, string buttonText = "", bool forceCaps = true) {
 			UI.RegisterOnSceneLoad((scene) => {
@@ -20,6 +25,29 @@ namespace ULTRAINTERFACE {
 				createAction(optionsMenu);
 				optionsMenu.UpdateNavigation();
 			});
+		}
+
+		public static RectTransform CreateOptionsPanel(Transform parent) {
+			RectTransform panel = GameObject.Instantiate(OptionsPanelPrefab, parent).GetComponent<RectTransform>();
+			panel.gameObject.name = "Options Panel";
+			panel.gameObject.layer = 5;
+
+			while (panel.childCount > 0) {
+				GameObject.DestroyImmediate(panel.GetChild(0).gameObject);
+			}
+
+			VerticalLayoutGroup layoutGroup = panel.gameObject.AddComponent<VerticalLayoutGroup>();
+			layoutGroup.padding = new RectOffset(40, 40, 20, 20);
+			layoutGroup.childAlignment = TextAnchor.UpperCenter;
+			layoutGroup.childForceExpandHeight = false;
+			layoutGroup.childForceExpandWidth = false;
+			layoutGroup.childControlWidth = false;
+			layoutGroup.spacing = 20;
+
+			ContentSizeFitter fitter = panel.gameObject.AddComponent<ContentSizeFitter>();
+			fitter.verticalFit = ContentSizeFitter.FitMode.MinSize;
+
+			return panel;
 		}
 
 		static OptionsMenu CreateOptionsMenu_Internal(string title, string buttonText, bool forceCaps) {
@@ -31,7 +59,7 @@ namespace ULTRAINTERFACE {
 			}
 			if (buttonText == "") buttonText = title;
 
-			CustomScrollView scrollView = UI.CreateScrollView(OptionsMenu, 620, 520, TextAnchor.MiddleCenter, CultureInfo.InvariantCulture.TextInfo.ToTitleCase(title.ToLower()) + " Options");
+			CustomScrollView scrollView = UI.CreateScrollView(OptionsMenu, 620, 520, 20, TextAnchor.MiddleCenter, CultureInfo.InvariantCulture.TextInfo.ToTitleCase(title.ToLower()) + " Options");
 			Button optionsButton = UI.CreateButton(OptionsScroll.Content, title, 160, 50);
 			GameObject.Destroy(scrollView.GetComponent<HorizontalLayoutGroup>());
 			scrollView.gameObject.AddComponent<HudOpenEffect>();
@@ -97,11 +125,19 @@ namespace ULTRAINTERFACE {
 
 			optionsMenu.LateCreate.Add((menu) => {
 				Selectable firstSelectable = menu.ScrollView.Content.GetComponentInChildren<Selectable>();
-
 				typeof(GamepadObjectSelector).GetField("target", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(menu.ScrollView.GetComponent<GamepadObjectSelector>(), firstSelectable ? firstSelectable.gameObject : null);
 			});
 
-			optionsMenu.FirstShown.Add((menu) => { menu.ScrollToTop(); });
+			optionsMenu.FirstShown.Add((menu) => {
+				foreach (LayoutGroup layout in menu.GetComponentsInChildren<LayoutGroup>()) {
+					LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)layout.transform);
+					LayoutRebuilder.MarkLayoutForRebuild((RectTransform)layout.transform);
+				}
+
+				foreach (ScrollRect scrollRect in menu.GetComponentsInChildren<ScrollRect>()) {
+					scrollRect.ScrollToTop();
+				}
+			});
 
 			UpdateOptionsScrollNavigation();
 
@@ -161,7 +197,7 @@ namespace ULTRAINTERFACE {
 			// If "Options Scroll View" exists then another mod has set it up already
 			Transform existingMenuTrans = OptionsMenu.Find("Options Scroll View");
 			if (!existingMenuTrans) {
-				OptionsScroll = UI.CreateScrollView(OptionsMenu, 215, 470, TextAnchor.UpperCenter, "Options Scroll View");
+				OptionsScroll = UI.CreateScrollView(OptionsMenu, 185, 470, 20, TextAnchor.UpperCenter, "Options Scroll View");
 				RectTransform optionsScrollRect = OptionsScroll.GetComponent<RectTransform>();
 				optionsScrollRect.anchorMin = new Vector2(0, 0.5f);
 				optionsScrollRect.anchorMax = new Vector2(0, 0.5f);
@@ -192,6 +228,9 @@ namespace ULTRAINTERFACE {
 				}
 			}
 
+			GameplayOptionsContent = OptionsMenu.Find("Gameplay Options").GetChild(1).GetChild(0);
+			OptionsPanelPrefab = GameplayOptionsContent.GetChild(0).gameObject;
+
 			return true;
 		}
 
@@ -206,7 +245,6 @@ namespace ULTRAINTERFACE {
 		public List<Action<OptionsMenu>> LateCreate { get; private set; } = new List<Action<OptionsMenu>>();
 		public List<Action<OptionsMenu>> FirstShown { get; private set; } = new List<Action<OptionsMenu>>();
 
-		public RectTransform rectTransform { get; private set; }
 		public CustomScrollView ScrollView { get; private set; }
 		public Button OptionsButton { get; private set; }
 		public Text Title { get; private set; }
@@ -216,13 +254,16 @@ namespace ULTRAINTERFACE {
 		public bool IsInitalised { get; private set; } = false;
 		public bool HasBeenShown { get; private set; } = false;
 
+		public RectTransform AddOptionsPanel() {
+			return Options.CreateOptionsPanel(Content);
+		}
+
 		internal void Init(CustomScrollView scrollView, Button optionsButton, Text title) {
 			if (IsInitalised) {
 				UI.Log.LogError($"Options Menu \"{gameObject.name}\" already initalised, returning...");
 				return;
 			}
 
-			this.rectTransform = GetComponent<RectTransform>();
 			this.ScrollView = scrollView;
 			this.OptionsButton = optionsButton;
 			this.Title = title;
@@ -264,13 +305,6 @@ namespace ULTRAINTERFACE {
 			}
 		}
 
-		public void ScrollToTop() {
-			float movementVal = (ScrollView.Content.sizeDelta.y - ScrollView.ScrollRect.GetComponent<RectTransform>().sizeDelta.y) * -0.5f;
-			if (movementVal > 0) return;
-
-			ScrollView.Content.anchoredPosition = new Vector2(ScrollView.Content.anchoredPosition.x, movementVal);
-		}
-
 		public void SetTitle(string titleText, bool forceCaps = true) {
 			if (forceCaps) titleText = titleText.ToUpper();
 
@@ -288,10 +322,10 @@ namespace ULTRAINTERFACE {
 				HasBeenShown = true;
 
 				this.InvokeNextFrame(() => {
-				foreach (Action<OptionsMenu> action in FirstShown) {
-					action(this);
-				}
-			});
+					foreach (Action<OptionsMenu> action in FirstShown) {
+						action(this);
+					}
+				});
 			}
 		}
 	}

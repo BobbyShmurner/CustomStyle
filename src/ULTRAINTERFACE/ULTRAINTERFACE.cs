@@ -18,10 +18,10 @@ namespace ULTRAINTERFACE {
 		public static List<Action<Scene>> OnSceneLoadActions { get; private set; } = new List<Action<Scene>>();
 		public static ManualLogSource Log { get; private set; }
 
-		public static GameObject ScrollRectPrefab { get; internal set; }
-		public static GameObject ScrollbarPrefab { get; internal set; }
-		public static GameObject ButtonPrefab { get; internal set; }
-		public static GameObject TextPrefab { get; internal set; }
+		static GameObject ScrollRectPrefab;
+		static GameObject ScrollbarPrefab;
+		static GameObject ButtonPrefab;
+		static GameObject TextPrefab;
 
 		static bool IsUISetup = false;
 		static bool HasInitalisedBefore = false;
@@ -39,19 +39,19 @@ namespace ULTRAINTERFACE {
 			}
 		}
 
-		public static CustomScrollView CreateScrollView(Transform parent, int width = 620, int height = 520, TextAnchor childAlignment = TextAnchor.UpperCenter, string name = "Custom Scroll View") {
+		public static CustomScrollView CreateScrollView(Transform parent, int width = 620, int height = 520, int spacing = 20, TextAnchor childAlignment = TextAnchor.UpperCenter, string name = "Custom Scroll View") {
 			if (!Init()) return null;
 
 			RectTransform scrollViewRect = new GameObject(name, new Type[]{typeof(RectTransform)}).GetComponent<RectTransform>();
 			scrollViewRect.gameObject.layer = 5;
-			scrollViewRect.sizeDelta = new Vector2(width, height);
+			scrollViewRect.sizeDelta = new Vector2(width + 35, height);
 			scrollViewRect.localPosition = Vector3.zero;
 			scrollViewRect.SetParent(parent, false);
 
 			HorizontalLayoutGroup scrollViewLayoutGroup = scrollViewRect.gameObject.AddComponent<HorizontalLayoutGroup>();
 			scrollViewLayoutGroup.childControlWidth = false;
 			scrollViewLayoutGroup.childControlHeight = false;
-			scrollViewLayoutGroup.spacing = 5;
+			scrollViewLayoutGroup.spacing = spacing;
 
 			ScrollRect scrollRect = GameObject.Instantiate(ScrollRectPrefab, scrollViewRect).GetComponent<ScrollRect>();
 			Scrollbar scrollbar = GameObject.Instantiate(ScrollbarPrefab, scrollViewRect).GetComponent<Scrollbar>();
@@ -66,7 +66,7 @@ namespace ULTRAINTERFACE {
 			scrollbarRect.gameObject.name = "Scrollbar";
 
 			RectTransform scrollRectTrans = scrollRect.GetComponent<RectTransform>();
-			scrollRectTrans.sizeDelta = new Vector2(width - 35, height);
+			scrollRectTrans.sizeDelta = new Vector2(width, height);
 			scrollRectTrans.localPosition = Vector3.zero;
 
 			RectTransform scrollRectContent = scrollRect.transform.GetChild(0).GetComponent<RectTransform>();
@@ -120,6 +120,10 @@ namespace ULTRAINTERFACE {
 			buttonText.verticalOverflow = VerticalWrapMode.Overflow;
 			buttonText.gameObject.name = "Text";
 			buttonText.text = text;
+
+			LayoutElement layoutElement = buttonGO.AddComponent<LayoutElement>();
+			layoutElement.minHeight = height;
+			layoutElement.minWidth = width;
 
 			return button;
 		}
