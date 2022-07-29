@@ -72,17 +72,29 @@ namespace CustomStyle
             });
 
             Options.CreateOptionsMenu("Custom Styles", (menu) => {
-                var panel = menu.AddOptionsPanel();
-                UI.CreateButton(panel, "epic button 1");
-                UI.CreateButton(panel, "epic button 2");
-                UI.CreateButton(panel, "epic button 3");
-                UI.CreateButton(panel, "epic button 4");
-                UI.CreateButton(panel, "epic button 5");
-                UI.CreateButton(panel, "epic button 6");
-                UI.CreateButton(panel, "epic button 7");
-                UI.CreateButton(panel, "epic button 8");
-                UI.CreateButton(panel, "epic button 9");
-                UI.CreateButton(panel, "wide boi", 580, 30);
+                var panelOne = menu.AddOptionsPanel();
+                
+                UI.CreateText(panelOne, "<size=50>stfu bozo</size>\nim gaming", 24, 600, 50);
+                UI.CreateButton(panelOne, "epic button 1");
+                UI.CreateButton(panelOne, "epic button 2");
+                UI.CreateButton(panelOne, "epic button 3");
+                UI.CreateButton(panelOne, "epic button 4");
+                UI.CreateButton(panelOne, "epic button 5");
+                UI.CreateButton(panelOne, "wide boi", 580, 30);
+
+                var panelTwo = menu.AddOptionsPanel();
+                
+                UI.CreateButton(panelTwo, "Press to die", () => {
+                    MonoSingleton<OptionsManager>.Instance.UnPause();
+
+                    SpawnableObjectsDatabase database = (SpawnableObjectsDatabase)typeof(SandboxSaver).GetField("objects", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Resources.FindObjectsOfTypeAll<SandboxSaver>()[0]);
+                    GameObject maurice = database.enemies[12].gameObject;
+
+                    NewMovement v1 = Camera.main.GetComponentsInParent<NewMovement>()[0];
+                    v1.InvokeNextFrame(() => v1.GetHurt(10000, false, 1, true));
+
+                    GameObject.Instantiate(maurice.transform.GetChild(0).GetComponent<SpiderBody>().beamExplosion, v1.transform.position, Quaternion.identity);
+                }, 400);
             }, "Styles");
 
             Plugin.Log.LogInfo("Created UI");

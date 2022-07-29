@@ -12,6 +12,7 @@ namespace CustomStyle {
 	public static class FixStyleInfoText {
 		public static void Postfix(StyleHUD __instance, ref Text ___styleInfo) {
 			___styleInfo = __instance.transform.GetChild(0).GetChild(1).GetComponentInChildren<Text>();
+			__instance.styleRank.enabled = false;
 		}
 	}
 
@@ -28,22 +29,22 @@ namespace CustomStyle {
 		}
 	}
 
-	[HarmonyPatch(typeof(StyleHUD))]
-    [HarmonyPatch("Update")]
-	public static class InfinteStyle {
-		public static void Postfix(ref StyleHUD __instance, ref bool ___ascending) {
-			__instance.currentMeter = __instance.maxMeter;
-			__instance.styleRank.enabled = Plugin.showOriginalStyle;
+	// [HarmonyPatch(typeof(StyleHUD))]
+    // [HarmonyPatch("Update")]
+	// public static class InfinteStyle {
+	// 	public static void Postfix(ref StyleHUD __instance, ref bool ___ascending) {
+	// 		__instance.currentMeter = __instance.maxMeter;
+	// 		__instance.styleRank.enabled = Plugin.showOriginalStyle;
 
-			// -- Ascention / Descention Code --
+	// 		// -- Ascention / Descention Code --
 
-			___ascending = Plugin.shouldAscend || Plugin.shouldDescend;
+	// 		___ascending = Plugin.shouldAscend || Plugin.shouldDescend;
 
-			if (Plugin.shouldAscend && __instance.currentRank < 7) typeof(StyleHUD).GetMethod("AscendRank", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(__instance, new Object[]{});
-			if (Plugin.shouldDescend) typeof(StyleHUD).GetMethod("DescendRank", BindingFlags.Instance | BindingFlags.Public).Invoke(__instance, new Object[]{});
+	// 		if (Plugin.shouldAscend && __instance.currentRank < 7) typeof(StyleHUD).GetMethod("AscendRank", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(__instance, new Object[]{});
+	// 		if (Plugin.shouldDescend) typeof(StyleHUD).GetMethod("DescendRank", BindingFlags.Instance | BindingFlags.Public).Invoke(__instance, new Object[]{});
 
-			Plugin.shouldAscend = false;
-			Plugin.shouldDescend = false;
-		}
-	}
+	// 		Plugin.shouldAscend = false;
+	// 		Plugin.shouldDescend = false;
+	// 	}
+	// }
 }

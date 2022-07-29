@@ -39,7 +39,7 @@ namespace ULTRAINTERFACE {
 			}
 		}
 
-		public static CustomScrollView CreateScrollView(Transform parent, int width = 620, int height = 520, int spacing = 20, TextAnchor childAlignment = TextAnchor.UpperCenter, string name = "Custom Scroll View") {
+		public static CustomScrollView CreateScrollView(Transform parent, float width = 620, float height = 520, int spacing = 20, TextAnchor childAlignment = TextAnchor.UpperCenter, string name = "Custom Scroll View") {
 			if (!Init()) return null;
 
 			RectTransform scrollViewRect = new GameObject(name, new Type[]{typeof(RectTransform)}).GetComponent<RectTransform>();
@@ -95,12 +95,25 @@ namespace ULTRAINTERFACE {
 			return scrollView;
 		}
 
-		public static Button CreateButton(Transform parent, string text = "New Button", int width = 160, int height = 50, bool forceCaps = true) {
+		public static void SetupLayoutElement(GameObject gameObject, float width, float height) {
+			LayoutElement layoutElement = gameObject.AddComponent<LayoutElement>();
+			layoutElement.minHeight = height;
+			layoutElement.minWidth = width;
+		}
+
+		public static Button CreateButton(Transform parent, string text, UnityAction onClick, float width = 160, float height = 50, bool forceCaps = true) {
+			Button button = CreateButton(parent, text, width, height, forceCaps);
+			button.onClick.AddListener(onClick);
+
+			return button;
+		}
+
+		public static Button CreateButton(Transform parent, string text, float width = 160, float height = 50, bool forceCaps = true) {
 			if (!Init()) return null;
 			if (forceCaps) text = text.ToUpper();
 
 			GameObject buttonGO = GameObject.Instantiate(ButtonPrefab, parent);
-			buttonGO.name = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(text.ToLower());
+			buttonGO.name = CultureInfo.InvariantCulture.TextInfo.ToTitleCase($"{text.ToLower()} Button");
 			buttonGO.AddComponent<UIComponent>();
 
 			RectTransform buttonRect = buttonGO.GetComponent<RectTransform>();
@@ -121,14 +134,13 @@ namespace ULTRAINTERFACE {
 			buttonText.gameObject.name = "Text";
 			buttonText.text = text;
 
-			LayoutElement layoutElement = buttonGO.AddComponent<LayoutElement>();
-			layoutElement.minHeight = height;
-			layoutElement.minWidth = width;
+			SetupLayoutElement(buttonGO, width, height);
+			Options.SetupBackSelectOverride(buttonGO);
 
 			return button;
 		}
 
-		public static Text CreateText(Transform parent, string displayText = "New Text", int fontSize = 24, int width = 240, int height = 30, TextAnchor anchor = TextAnchor.MiddleCenter, bool forceCaps = true) {
+		public static Text CreateText(Transform parent, string displayText = "New Text", int fontSize = 24, float width = 600, float height = 30, TextAnchor anchor = TextAnchor.MiddleCenter, bool forceCaps = true) {
 			if (!Init()) return null;
 			if (forceCaps) displayText = displayText.ToUpper();
 
@@ -147,6 +159,8 @@ namespace ULTRAINTERFACE {
 
 			text.horizontalOverflow = HorizontalWrapMode.Overflow;
 			text.verticalOverflow = VerticalWrapMode.Overflow;
+
+			SetupLayoutElement(textGO, width, height);
 
 			return text;
 		}

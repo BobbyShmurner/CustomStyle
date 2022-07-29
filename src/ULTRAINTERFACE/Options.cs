@@ -50,6 +50,16 @@ namespace ULTRAINTERFACE {
 			return panel;
 		}
 
+		public static void SetupBackSelectOverride(GameObject gameObject) {
+			OptionsMenu[] menus = gameObject.GetComponentsInParent<OptionsMenu>(true);
+			if (menus.Length == 0) return;
+
+			OptionsMenu menu = menus[0];
+
+			BackSelectOverride backSelectOverride = gameObject.AddComponent<BackSelectOverride>();
+			backSelectOverride.Selectable = menu.OptionsButton;
+		}
+
 		static OptionsMenu CreateOptionsMenu_Internal(string title, string buttonText, bool forceCaps) {
 			if (!Init()) return null;
 
@@ -59,7 +69,7 @@ namespace ULTRAINTERFACE {
 			}
 			if (buttonText == "") buttonText = title;
 
-			CustomScrollView scrollView = UI.CreateScrollView(OptionsMenu, 620, 520, 20, TextAnchor.MiddleCenter, CultureInfo.InvariantCulture.TextInfo.ToTitleCase(title.ToLower()) + " Options");
+			CustomScrollView scrollView = UI.CreateScrollView(OptionsMenu, 620, 520, 0, TextAnchor.MiddleCenter, CultureInfo.InvariantCulture.TextInfo.ToTitleCase(title.ToLower()) + " Options");
 			Button optionsButton = UI.CreateButton(OptionsScroll.Content, title, 160, 50);
 			GameObject.Destroy(scrollView.GetComponent<HorizontalLayoutGroup>());
 			scrollView.gameObject.AddComponent<HudOpenEffect>();
